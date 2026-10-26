@@ -1,0 +1,3 @@
+-- Migration: 005_queue_entries.sql
+-- Purpose: Defines active clinic queue entries, dynamic priorities, token sequencing, and doctor assignment states.
+-- SRS Requirements: FR-2.1 (Queue Ingestion), BR-1 (Priority Ordering Rules), BR-2 (State Transition Matrix)

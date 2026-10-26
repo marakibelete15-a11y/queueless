@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "QueueLess - የክሊኒክ ቀጠሮ እና ሰልፍ መቆጣጠሪያ",
+    "tagline": "የቀጥታ ሰልፍ መረጃ እና ቀልጣፋ የቀጠሮ አገልግሎት"
+  },
+  "nav": {
+    "home": "ዋና ገጽ",
+    "book": "ቀጠሮ ይያዙ",
+    "status": "የሰልፍ ሁኔታን ይመልከቱ",
+    "cancel": "ቀጠሮ ይሰርዙ",
+    "display": "የሰልፍ ማሳያ",
+    "privacy": "የግላዊነት መረጃ",
+    "staffLogin": "የሰራተኞች ገጽ"
+  },
+  "common": {
+    "loading": "በመጫን ላይ...",
+    "submit": "አስገባ",
+    "cancel": "ይቅር",
+    "back": "ተመለስ",
+    "refresh": "አድስ",
+    "tokenNumber": "የቶከን ቁጥር",
+    "doctor": "ሐኪም",
+    "room": "ክፍል",
+    "eta": "የሚጠበቀው የቆይታ ጊዜ",
+    "status": "ሁኔታ",
+    "errorOccurred": "ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።"
+  },
+  "booking": {
+    "selectDoctor": "ሐኪም ይምረጡ",
+    "selectDate": "ቀን ይምረጡ",
+    "selectSlot": "ክፍት ሰዓታት",
+    "contactPlaceholder": "የስልክ ቁጥር ያስገቡ",
+    "confirmButton": "ቀጠሮውን ያረጋግጡ",
+    "successMessage": "ቀጠሮዎ ተረጋግጧል! የማረጋገጫ ቁጥርዎን ይያዙ።"
+  },
+  "status": {
+    "inputPlaceholder": "የቀጠሮ መለያ ቁጥርዎን ያስገቡ",
+    "checkButton": "ሁኔታን ያረጋግጡ",
+    "currentQueuePosition": "በሰልፍ ውስጥ ያለዎት ደረጃ",
+    "estimatedCallTime": "የሚጠሩበት ግምታዊ ሰዓት"
+  },
+  "queueBoard": {
+    "nowServing": "አሁን የሚስተናገደው",
+    "nextInLine": "ቀጣይ ተራ",
+    "waitingRoom": "የመጠባበቂያ ክፍል"
+  },
+  "staff": {
+    "receptionistTitle": "የአስተናጋጅ ገጽ",
+    "doctorTitle": "የሐኪም ምርመራ ክፍል",
+    "adminTitle": "የክሊኒክ አስተዳደር",
+    "callNext": "ቀጣዩን ተራ ጥራ",
+    "markNoShow": "ያልቀረበ ተብሎ ይመዝገብ",
+    "startConsultation": "ምርመራ ጀምር",
+    "completeConsultation": "ምርመራ ጨርስ",
+    "walkinRegistration": "ያለቀጠሮ የመጡ ታካሚዎችን መዝግብ"
+  }
+}

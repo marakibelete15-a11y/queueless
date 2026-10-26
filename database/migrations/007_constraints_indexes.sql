@@ -1,0 +1,3 @@
+-- Migration: 007_constraints_indexes.sql
+-- Purpose: Defines relational foreign key constraints, unique slot concurrency indexes, and queue performance indexes.
+-- SRS Requirements: SYS-PERF (Queue Query Latency <50ms), REL-1 (Idempotent Slot Booking), REL-2 (Referential Integrity)

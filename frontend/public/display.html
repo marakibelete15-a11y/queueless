@@ -1,0 +1,73 @@
+<!--
+  @file Waiting Room Queue Board View
+  Purpose: High-visibility public wall display showing currently called token numbers, doctor rooms, and upcoming tokens.
+  SRS Requirements: FR-2.1 (Public Display Board), UI-1 (High-contrast Display Layout)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="queueBoard.nowServing">Queue Display</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <style>
+      body {
+        background-color: #0d1b2a;
+        color: #ffffff;
+      }
+      .display-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      .serving-card {
+        background: #1b263b;
+        border: 2px solid #415a77;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+      }
+      .serving-token {
+        font-size: 5rem;
+        font-weight: 800;
+        color: #00b4d8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="max-width: 1400px">
+      <header
+        style="
+          padding: 1.5rem 0;
+          border-bottom: 1px solid #415a77;
+          display: flex;
+          justify-content: space-between;
+        "
+      >
+        <h1 data-i18n="app.title">QueueLess</h1>
+        <h2 data-i18n="queueBoard.nowServing">Now Serving</h2>
+      </header>
+
+      <div class="display-grid">
+        <div class="serving-card">
+          <h3 data-i18n="queueBoard.nowServing"></h3>
+          <div class="serving-token" id="active-token">--</div>
+          <div id="active-doctor-room" style="font-size: 1.8rem; margin-top: 1rem; color: #e0e1dd">
+            --
+          </div>
+        </div>
+        <div class="serving-card">
+          <h3 data-i18n="queueBoard.nextInLine"></h3>
+          <ul
+            id="upcoming-tokens-list"
+            style="list-style: none; margin-top: 1.5rem; font-size: 2rem; color: #778da9"
+          ></ul>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/js/pages/display.page.js"></script>
+  </body>
+</html>

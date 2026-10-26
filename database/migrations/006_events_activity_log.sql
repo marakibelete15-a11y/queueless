@@ -1,0 +1,3 @@
+-- Migration: 006_events_activity_log.sql
+-- Purpose: Defines the append-only activity audit log capturing system events, status changes, and operator actions without PII.
+-- SRS Requirements: NFR-AUDIT (Append-Only Audit Trail), SEC-4 (Zero PII in Logs), OPS-1 (Auditing and Compliance)

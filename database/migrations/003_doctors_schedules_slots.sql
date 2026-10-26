@@ -1,0 +1,3 @@
+-- Migration: 003_doctors_schedules_slots.sql
+-- Purpose: Defines doctor profiles, working shifts, consultation duration templates, and appointment time slots.
+-- SRS Requirements: FR-1.1 (Slot Availability), FR-6.2 (Doctor Schedules), BR-3 (Slot Duration Rules)

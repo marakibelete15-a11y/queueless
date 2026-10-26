@@ -1,0 +1,60 @@
+<!--
+  @file Patient Privacy Notice View
+  Purpose: Outlines data privacy commitments, pseudonymization policies, and synthetic data compliance disclosures.
+  SRS Requirements: SEC-4 (Patient Privacy & Pseudonymization), COMP-1 (Compliance Notice)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="nav.privacy">Privacy Policy</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>
+            <a
+              href="/index.html"
+              style="text-decoration: none; color: inherit"
+              data-i18n="app.title"
+            ></a>
+          </h1>
+          <ul class="nav-links">
+            <li><a href="/index.html" data-i18n="nav.home"></a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 data-i18n="nav.privacy" style="margin-bottom: 1.5rem"></h2>
+        <p style="margin-bottom: 1rem">
+          QueueLess is engineered with privacy-by-design principles:
+        </p>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; line-height: 1.8">
+          <li>
+            No patient personal identifiable information (PII) is written to application log files.
+          </li>
+          <li>Patient phone numbers and contact details are stored pseudonymized or hashed.</li>
+          <li>
+            Public queue screens display only opaque token numbers (e.g., A-102, W-204) without
+            patient names.
+          </li>
+          <li>System activity audit logs are strictly append-only.</li>
+        </ul>
+        <p>
+          <em
+            >Notice: This instance operates in Demonstration Mode with synthetic datasets only.</em
+          >
+        </p>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/privacy.page.js"></script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!--
+  @file Patient Appointment Booking View
+  Purpose: Step-by-step form for doctor selection, available slot lookup, and reservation confirmation.
+  SRS Requirements: FR-1.1 (Slot Query), FR-1.2 (Appointment Booking), FR-1.3 (Booking Reference)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="nav.book">Book Appointment</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>
+            <a
+              href="/index.html"
+              style="text-decoration: none; color: inherit"
+              data-i18n="app.title"
+            ></a>
+          </h1>
+          <ul class="nav-links">
+            <li><a href="/index.html" data-i18n="nav.home"></a></li>
+            <li><a href="/status.html" data-i18n="nav.status"></a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 data-i18n="nav.book" style="margin-bottom: 1.5rem"></h2>
+        <form id="booking-form">
+          <div class="form-group">
+            <label class="form-label" data-i18n="booking.selectDoctor"></label>
+            <select id="doctor-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="booking.selectDate"></label>
+            <input type="date" id="booking-date-input" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="booking.selectSlot"></label>
+            <div id="slots-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap"></div>
+          </div>
+          <div class="form-group">
+            <input
+              type="tel"
+              id="contact-input"
+              class="form-input"
+              data-i18n-placeholder="booking.contactPlaceholder"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="booking.confirmButton"></button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/book.page.js"></script>
+  </body>
+</html>

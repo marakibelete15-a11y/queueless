@@ -1,0 +1,3 @@
+-- Migration: 001_clinic_settings.sql
+-- Purpose: Defines clinic profile, operating hours, display timezone, and multi-tenant clinic entity.
+-- SRS Requirements: FR-6.1 (Clinic Management), SYS-1 (Multi-Tenancy Readiness), SYS-TIME (Timezone Configuration)

@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "QueueLess - Sirna To'annoo Beellama fi Tarree Kilinikaa",
+    "tagline": "Hordoffii tarree battalaa fi beellama si'ataa"
+  },
+  "nav": {
+    "home": "Fuula Duraa",
+    "book": "Beellama Qabadhaa",
+    "status": "Sadarkaa Tarree Ilaalaa",
+    "cancel": "Beellama Haqaatii",
+    "display": "Argisiisa Tarree",
+    "privacy": "Iccitii Eeguu",
+    "staffLogin": "Seensa Hojjattootaa"
+  },
+  "common": {
+    "loading": "Banuu jira...",
+    "submit": "Galchi",
+    "cancel": "Dhiisi",
+    "back": "Duubatti",
+    "refresh": "Haaromsi",
+    "tokenNumber": "Lakkoofsa Tookanii",
+    "doctor": "Ogeessa Fayyaa",
+    "room": "Kutaa",
+    "eta": "Yeroo Eegamu",
+    "status": "Haala",
+    "errorOccurred": "Dogoggorri uumameera. Maaloo irra deebi'aa yaalaa."
+  },
+  "booking": {
+    "selectDoctor": "Ogeessa Fayyaa Filadhaa",
+    "selectDate": "Guyyaa Filadhaa",
+    "selectSlot": "Sa'aatii Banaa",
+    "contactPlaceholder": "Lakkoofsa Bilbilaa Galchaa",
+    "confirmButton": "Beellama Mirkaneessaa",
+    "successMessage": "Beellamni keessan mirkanaayeera! Lakkoofsa beellamaa keessan eeggadhaa."
+  },
+  "status": {
+    "inputPlaceholder": "Lakkoofsa Beellamaa Galchaa",
+    "checkButton": "Ilaalaa",
+    "currentQueuePosition": "Sadarkaa Keessan Tarree Keessatti",
+    "estimatedCallTime": "Yeroo Waamamuuf Eegamu"
+  },
+  "queueBoard": {
+    "nowServing": "Amma Kan Tajaajilamaa Jiru",
+    "nextInLine": "Kan Itti Aanu",
+    "waitingRoom": "Kutaa Eeggannaa"
+  },
+  "staff": {
+    "receptionistTitle": "Fuula Keessummeessituu",
+    "doctorTitle": "Kutaa Yaala Ogeessa Fayyaa",
+    "adminTitle": "Bulchiinsa Kilinikaa",
+    "callNext": "Kan Itti Aanu Waamaa",
+    "markNoShow": "Kan Hin Dhufne Jedhii Galmeessi",
+    "startConsultation": "Yaala Jalqabaa",
+    "completeConsultation": "Yaala Xumuraa",
+    "walkinRegistration": "Beellama Malee Kan Dhufan Galmeessi"
+  }
+}

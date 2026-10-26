@@ -1,0 +1,43 @@
+<!--
+  @file Patient Check-in View
+  Purpose: Desk interface to confirm booked patient arrival, verify appointment details, and transition to active queue.
+  SRS Requirements: FR-2.2 (Patient Check-in), BR-2 (Status Transition from Booked to Waiting)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Check-in</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>Appointment Check-in</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/receptionist.html">Back to Queue</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container" style="max-width: 500px">
+      <div class="card">
+        <h2 style="margin-bottom: 1.5rem">Verify Arrival</h2>
+        <form id="checkin-form">
+          <div class="form-group">
+            <label class="form-label" data-i18n="status.inputPlaceholder"></label>
+            <input type="text" id="checkin-ref-input" class="form-input" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Check In Patient</button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/checkin.page.js"></script>
+  </body>
+</html>

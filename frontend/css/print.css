@@ -1,0 +1,44 @@
+/**
+ * @file Print Stylesheet
+ * Purpose: Optimizes patient queue slips, appointment confirmations, and token paper printouts.
+ * SRS Requirements: UI-PRINT (Thermal/Paper Queue Token Printing), FR-1.3 (Physical Booking Slip)
+ */
+
+@media print {
+  header.app-header,
+  footer.app-footer,
+  .btn,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .printable-slip {
+    border: 1px dashed #000000;
+    padding: 1.5rem;
+    max-width: 350px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .printable-slip .token-display {
+    font-size: 2.5rem;
+    color: #000000;
+  }
+}

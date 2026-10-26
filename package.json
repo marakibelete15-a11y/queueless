@@ -1,0 +1,29 @@
+{
+  "name": "queueless",
+  "version": "0.1.0",
+  "description": "Clinic appointment and queue management system",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm --workspace=backend run dev",
+    "start": "npm --workspace=backend start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm --workspace=backend test",
+    "migrate": "./scripts/run-migrations.sh",
+    "seed": "./scripts/run-migrations.sh --seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "eslint": "^9.20.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

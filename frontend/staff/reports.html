@@ -1,0 +1,71 @@
+<!--
+  @file Clinic Operational Reports View
+  Purpose: Dashboard displaying aggregate patient throughput, wait time percentiles, and no-show statistics.
+  SRS Requirements: NFR-AUDIT (Operational Analytics), BR-4 (No-Show Metrics), SEC-2 (Admin & Receptionist Access)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Queue Reports & Analytics</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>Operational Reports</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/admin.html">Back to Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 style="margin-bottom: 1.5rem">Daily Queue Metrics</h2>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+          "
+        >
+          <div class="card" style="text-align: center">
+            <div
+              style="font-size: 2.5rem; font-weight: 700; color: var(--color-primary)"
+              id="metric-served"
+            >
+              --
+            </div>
+            <div style="color: var(--color-text-muted)">Total Patients Served</div>
+          </div>
+          <div class="card" style="text-align: center">
+            <div
+              style="font-size: 2.5rem; font-weight: 700; color: var(--color-warning)"
+              id="metric-wait"
+            >
+              -- min
+            </div>
+            <div style="color: var(--color-text-muted)">Average Wait Time</div>
+          </div>
+          <div class="card" style="text-align: center">
+            <div
+              style="font-size: 2.5rem; font-weight: 700; color: var(--color-danger)"
+              id="metric-noshow"
+            >
+              --
+            </div>
+            <div style="color: var(--color-text-muted)">No-Show Count</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/reports.page.js"></script>
+  </body>
+</html>

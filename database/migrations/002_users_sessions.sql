@@ -1,0 +1,3 @@
+-- Migration: 002_users_sessions.sql
+-- Purpose: Defines staff credentials, RBAC roles (admin, doctor, receptionist), and persistent sessions.
+-- SRS Requirements: FR-4.1 (Staff Authentication), SEC-1 (Credential Storage), SEC-2 (RBAC Roles)

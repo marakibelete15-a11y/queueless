@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  lint-and-test:
+    name: Lint, Migrate & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: queueless_ci
+          POSTGRES_PASSWORD: queueless_ci_password
+          POSTGRES_DB: queueless_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      TZ: UTC
+      DATABASE_URL: postgres://queueless_ci:queueless_ci_password@localhost:5432/queueless_test
+      SESSION_SECRET: ci-test-secret-value-must-be-at-least-32-chars-long
+      APP_MODE: demo
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Code Style & Lint
+        run: npm run lint
+
+      - name: Check Formatting
+        run: npm run format:check
+
+      - name: Execute Test Suite
+        run: npm test

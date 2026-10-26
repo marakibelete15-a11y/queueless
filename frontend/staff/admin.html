@@ -1,0 +1,62 @@
+<!--
+  @file Clinic Administration Console View
+  Purpose: Administrative panel for configuring clinic operating hours, doctor rosters, and viewing system settings.
+  SRS Requirements: FR-6.1 (Clinic Administration), FR-6.2 (Doctor Roster Management), SEC-2 (Admin RBAC)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="staff.adminTitle">Clinic Admin</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1 data-i18n="staff.adminTitle">Clinic Administration</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/reports.html">Reports</a></li>
+            <li><a href="/staff/activity-log.html">Activity Log</a></li>
+            <li><a href="/staff/login.html">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="staff-layout">
+        <aside class="staff-sidebar">
+          <ul class="staff-menu">
+            <li><a href="/staff/admin.html" class="active">Clinic Settings</a></li>
+            <li><a href="/staff/reports.html">Analytics & Reports</a></li>
+            <li><a href="/staff/activity-log.html">Activity Audit Log</a></li>
+          </ul>
+        </aside>
+        <section class="card">
+          <h3>Clinic Profile & Operating Schedule</h3>
+          <form id="clinic-config-form" style="margin-top: 1rem">
+            <div class="form-group">
+              <label class="form-label">Clinic Name</label>
+              <input type="text" id="clinic-name-input" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Opening Time (Africa/Addis_Ababa)</label>
+              <input type="time" id="open-time-input" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Closing Time (Africa/Addis_Ababa)</label>
+              <input type="time" id="close-time-input" class="form-input" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/admin.page.js"></script>
+  </body>
+</html>

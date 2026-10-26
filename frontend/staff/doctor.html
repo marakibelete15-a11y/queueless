@@ -1,0 +1,56 @@
+<!--
+  @file Doctor Consultation Station View
+  Purpose: In-room interface for physicians to advance their patient queue, call next token, and mark consultations complete.
+  SRS Requirements: FR-2.1 (Call Next Patient), BR-2 (Consultation Lifecycle), FR-3.1 (Mark No-Show)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="staff.doctorTitle">Doctor Station</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1 data-i18n="staff.doctorTitle">Doctor Station</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/login.html">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card" style="text-align: center; max-width: 600px; margin: 2rem auto">
+        <h3 style="color: var(--color-text-muted); margin-bottom: 0.5rem">
+          Current Patient In Room
+        </h3>
+        <div class="token-display" id="doctor-current-token">--</div>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem">
+          <button
+            id="doctor-call-next-btn"
+            class="btn btn-primary"
+            data-i18n="staff.callNext"
+          ></button>
+          <button
+            id="doctor-complete-btn"
+            class="btn btn-secondary"
+            data-i18n="staff.completeConsultation"
+          ></button>
+          <button
+            id="doctor-no-show-btn"
+            class="btn btn-danger"
+            data-i18n="staff.markNoShow"
+          ></button>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/doctor.page.js"></script>
+  </body>
+</html>

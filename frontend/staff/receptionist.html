@@ -1,0 +1,64 @@
+<!--
+  @file Receptionist Operations Dashboard
+  Purpose: Primary desk interface for managing live queues, calling tokens, triage, and checking in patients.
+  SRS Requirements: FR-2.1 (Queue Management), FR-2.2 (Check-in), FR-5.1 (Walk-in Intake)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="staff.receptionistTitle">Receptionist Portal</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1 data-i18n="staff.receptionistTitle">Receptionist Portal</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/walkin.html" data-i18n="staff.walkinRegistration"></a></li>
+            <li><a href="/staff/checkin.html">Check-in</a></li>
+            <li><a href="/staff/backfill.html">Backfill</a></li>
+            <li><a href="/staff/login.html">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="staff-layout">
+        <aside class="staff-sidebar">
+          <ul class="staff-menu">
+            <li><a href="/staff/receptionist.html" class="active">Active Queue</a></li>
+            <li><a href="/staff/walkin.html">Register Walk-in</a></li>
+            <li><a href="/staff/checkin.html">Check-in Appointment</a></li>
+            <li><a href="/staff/backfill.html">Offline Backfill</a></li>
+          </ul>
+        </aside>
+        <section class="card">
+          <h3>Current Clinic Queue</h3>
+          <table class="queue-table" style="margin-top: 1rem">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Doctor</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Wait Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="receptionist-queue-tbody">
+              <!-- Rendered by receptionist.page.js -->
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/receptionist.page.js"></script>
+  </body>
+</html>

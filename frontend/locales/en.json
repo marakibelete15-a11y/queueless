@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "QueueLess - Clinic Queue Management",
+    "tagline": "Real-time queue tracking and streamlined appointments"
+  },
+  "nav": {
+    "home": "Home",
+    "book": "Book Appointment",
+    "status": "Check Status",
+    "cancel": "Cancel Booking",
+    "display": "Queue Display",
+    "privacy": "Privacy Notice",
+    "staffLogin": "Staff Portal"
+  },
+  "common": {
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "back": "Back",
+    "refresh": "Refresh",
+    "tokenNumber": "Token Number",
+    "doctor": "Doctor",
+    "room": "Room",
+    "eta": "Estimated Wait Time",
+    "status": "Status",
+    "errorOccurred": "An error occurred. Please try again."
+  },
+  "booking": {
+    "selectDoctor": "Select a Doctor",
+    "selectDate": "Select Date",
+    "selectSlot": "Available Slots",
+    "contactPlaceholder": "Enter Phone Number for Verification Code",
+    "confirmButton": "Confirm Reservation",
+    "successMessage": "Your appointment is confirmed! Save your booking reference."
+  },
+  "status": {
+    "inputPlaceholder": "Enter Booking Reference (e.g., QL-ABC123)",
+    "checkButton": "Check Position",
+    "currentQueuePosition": "Your Position in Queue",
+    "estimatedCallTime": "Expected Call Time"
+  },
+  "queueBoard": {
+    "nowServing": "Now Serving",
+    "nextInLine": "Next in Line",
+    "waitingRoom": "Waiting Room"
+  },
+  "staff": {
+    "receptionistTitle": "Receptionist Dashboard",
+    "doctorTitle": "Doctor Consultation Station",
+    "adminTitle": "Clinic Administration",
+    "callNext": "Call Next Patient",
+    "markNoShow": "Mark No-Show",
+    "startConsultation": "Start Consultation",
+    "completeConsultation": "Complete Consultation",
+    "walkinRegistration": "Register Walk-in Patient"
+  }
+}

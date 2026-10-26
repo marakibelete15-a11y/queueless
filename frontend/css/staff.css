@@ -1,0 +1,55 @@
+/**
+ * @file Staff Management Stylesheet
+ * Purpose: Provides layout grids, queue control panels, and triage views for staff operational dashboards.
+ * SRS Requirements: UI-STAFF (Receptionist, Doctor, and Admin Interfaces), FR-2.1 (Queue Control Panel)
+ */
+
+.staff-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+}
+
+.staff-sidebar {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.staff-menu {
+  list-style: none;
+}
+
+.staff-menu li a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--color-text-main);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.staff-menu li a.active,
+.staff-menu li a:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.queue-table th,
+.queue-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.queue-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

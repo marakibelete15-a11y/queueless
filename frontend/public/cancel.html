@@ -1,0 +1,48 @@
+<!--
+  @file Patient Appointment Cancellation View
+  Purpose: Enables self-service cancellation of scheduled appointments, releasing the held slot.
+  SRS Requirements: FR-1.5 (Appointment Cancellation), BR-3 (Slot Concurrency Release)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="nav.cancel">Cancel Booking</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>
+            <a
+              href="/index.html"
+              style="text-decoration: none; color: inherit"
+              data-i18n="app.title"
+            ></a>
+          </h1>
+          <ul class="nav-links">
+            <li><a href="/index.html" data-i18n="nav.home"></a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 data-i18n="nav.cancel" style="margin-bottom: 1.5rem"></h2>
+        <form id="cancel-form">
+          <div class="form-group">
+            <label class="form-label" data-i18n="status.inputPlaceholder"></label>
+            <input type="text" id="ref-input" class="form-input" required />
+          </div>
+          <button type="submit" class="btn btn-danger" data-i18n="common.cancel"></button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/cancel.page.js"></script>
+  </body>
+</html>

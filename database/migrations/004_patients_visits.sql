@@ -1,0 +1,3 @@
+-- Migration: 004_patients_visits.sql
+-- Purpose: Defines pseudonymized patient records, booking appointments, and clinic visit lifecycle entries.
+-- SRS Requirements: FR-1.2 (Appointment Booking), FR-2.2 (Patient Check-in), SEC-4 (Patient Privacy & Anonymization)

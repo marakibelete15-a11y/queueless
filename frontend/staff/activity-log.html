@@ -1,0 +1,53 @@
+<!--
+  @file Append-Only Activity Log View
+  Purpose: Auditor and administrator interface for reviewing append-only audit events stripped of personal identifiable information.
+  SRS Requirements: NFR-AUDIT (Audit Trail Viewer), SEC-4 (Sanitized Activity Log Reporting)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activity Audit Log</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>Append-Only Activity Log</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/admin.html">Back to Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 style="margin-bottom: 0.5rem">Audit Events</h2>
+        <p style="color: var(--color-text-muted); margin-bottom: 1.5rem">
+          Immutable audit ledger. All personal patient identifiers are stripped before ingestion.
+        </p>
+        <table class="queue-table">
+          <thead>
+            <tr>
+              <th>Timestamp (UTC)</th>
+              <th>Event Type</th>
+              <th>Entity Type</th>
+              <th>Entity ID</th>
+              <th>Details (No PII)</th>
+            </tr>
+          </thead>
+          <tbody id="activity-log-tbody">
+            <!-- Populated by activityLog.page.js -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/activityLog.page.js"></script>
+  </body>
+</html>

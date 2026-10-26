@@ -1,0 +1,51 @@
+<!--
+  @file Offline Outage Backfill View
+  Purpose: Retrospective batch-entry form for receptionists to transcribe paper tokens used during connectivity outages.
+  SRS Requirements: FR-5.1 (Outage Fallback & Backfill), OPS-2 (Data Reconciliation)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline Data Backfill</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>Offline Outage Backfill</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/receptionist.html">Back to Queue</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card">
+        <h2 style="margin-bottom: 1rem">Transcribe Paper Ledger Entries</h2>
+        <p style="color: var(--color-text-muted); margin-bottom: 1.5rem">
+          Enter retrospective patient visits handled on paper during power or internet outages.
+        </p>
+        <form id="backfill-batch-form">
+          <div class="form-group">
+            <label class="form-label">Outage Date & Time Range</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. 2026-10-26 09:00 - 11:30 EAT"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Backfill Batch</button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/backfill.page.js"></script>
+  </body>
+</html>

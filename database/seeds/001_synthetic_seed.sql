@@ -1,0 +1,4 @@
+-- Seed: 001_synthetic_seed.sql
+-- Purpose: Inserts synthetic demonstration clinic settings, test doctors, and mock operating schedule.
+-- SRS Requirements: DEV-SEED (Synthetic Data Only), SYS-1 (Clinic Setup), FR-6.2 (Doctor Schedules)
+-- NOTE: Contains ONLY synthetic demonstration data. Real patient records are strictly prohibited.

@@ -1,0 +1,56 @@
+<!--
+  @file Public Landing Page
+  Purpose: Main entry point for patients to book appointments, check queue position, or view waiting room board.
+  SRS Requirements: UI-1 (Patient Entrypoint), SYS-I18N (Multi-language Support)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="app.title">QueueLess</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1 data-i18n="app.title">QueueLess</h1>
+          <ul class="nav-links">
+            <li><a href="/index.html" data-i18n="nav.home"></a></li>
+            <li><a href="/book.html" data-i18n="nav.book"></a></li>
+            <li><a href="/status.html" data-i18n="nav.status"></a></li>
+            <li><a href="/display.html" data-i18n="nav.display"></a></li>
+            <li><a href="/privacy.html" data-i18n="nav.privacy"></a></li>
+            <li><a href="/staff/login.html" data-i18n="nav.staffLogin"></a></li>
+          </ul>
+          <select id="locale-selector" class="form-select" style="width: auto">
+            <option value="en">English</option>
+            <option value="am">አማርኛ</option>
+            <option value="om">Afaan Oromoo</option>
+          </select>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="card" style="text-align: center; margin-top: 2rem">
+        <h2 data-i18n="app.title" style="margin-bottom: 0.5rem"></h2>
+        <p data-i18n="app.tagline" style="color: var(--color-text-muted); margin-bottom: 2rem"></p>
+        <div style="display: flex; gap: 1rem; justify-content: center">
+          <a href="/book.html" class="btn btn-primary" data-i18n="nav.book"></a>
+          <a href="/status.html" class="btn btn-secondary" data-i18n="nav.status"></a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <div class="container">
+        <p>&copy; 2026 QueueLess Clinic Management System</p>
+      </div>
+    </footer>
+
+    <script type="module" src="/js/pages/index.page.js"></script>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+<!--
+  @file Walk-in Patient Triage & Registration View
+  Purpose: Fast intake form for walk-in arrivals to assign priority triage and append to doctor queues.
+  SRS Requirements: FR-5.1 (Walk-in Intake), BR-1 (Priority Assignment), FR-2.1 (Queue Token Generation)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="staff.walkinRegistration">Walk-in Intake</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/staff.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container">
+        <nav class="app-nav">
+          <h1>Walk-in Intake</h1>
+          <ul class="nav-links">
+            <li><a href="/staff/receptionist.html">Back to Queue</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container" style="max-width: 600px">
+      <div class="card">
+        <h2 data-i18n="staff.walkinRegistration" style="margin-bottom: 1.5rem"></h2>
+        <form id="walkin-registration-form">
+          <div class="form-group">
+            <label class="form-label" data-i18n="common.doctor"></label>
+            <select id="walkin-doctor-select" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Triage Priority</label>
+            <select id="walkin-priority-select" class="form-select">
+              <option value="standard">Standard Walk-in</option>
+              <option value="urgent">Urgent</option>
+              <option value="emergency">Emergency Priority</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="common.submit"></button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/walkin.page.js"></script>
+  </body>
+</html>

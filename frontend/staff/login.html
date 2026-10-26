@@ -1,0 +1,52 @@
+<!--
+  @file Staff Authentication Portal View
+  Purpose: Login view for clinic staff (receptionists, doctors, administrators) to access protected workflows.
+  SRS Requirements: FR-4.1 (Staff Authentication), SEC-1 (Credential Input & Transport)
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="nav.staffLogin">Staff Login</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+  </head>
+  <body>
+    <main class="container" style="max-width: 450px; margin-top: 4rem">
+      <div class="card">
+        <h2 data-i18n="nav.staffLogin" style="margin-bottom: 1.5rem; text-align: center"></h2>
+        <form id="staff-login-form">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input
+              type="text"
+              id="username-input"
+              class="form-input"
+              autocomplete="username"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input
+              type="password"
+              id="password-input"
+              class="form-input"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%"
+            data-i18n="common.submit"
+          ></button>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="/js/pages/login.page.js"></script>
+  </body>
+</html>
