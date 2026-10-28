@@ -15,7 +15,10 @@
     "format:check": "prettier --check .",
     "test": "npm --workspace=backend test",
     "migrate": "./scripts/run-migrations.sh",
-    "seed": "./scripts/run-migrations.sh --seed"
+    "seed": "./scripts/run-migrations.sh --seed",
+    "db:setup": "./scripts/setup-db.sh",
+    "db:reset-dev": "./scripts/reset-dev-db.sh",
+    "test:db": "node scripts/db-tests.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",

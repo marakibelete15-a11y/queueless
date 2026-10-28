@@ -37,15 +37,19 @@ Data flows unidirectionally across clearly demarcated architectural layers:
 └──────┬───────┘
        │
        ▼
- [ PostgreSQL ]
+[ PostgreSQL ]
 ```
+
+### Database contract (Phase 2)
+
+PostgreSQL stores the clinic-scoped schema in `database/migrations/001`–`008`, with tenant-safe composite foreign keys and a plain-SQL `pg` migration runner. `visit` owns status; `queue_entry` owns ordering, timing, priority and backfill metadata. `doctor_day_queue` is the transaction lock and counter row for Phase 3 queue operations. The database design and deferred transaction contracts are in [docs/database.md](database.md). This phase does not implement services or API workflows.
 
 ### Architectural Principles:
 
 1. **Business Logic Isolation**: Routes and controllers must NEVER calculate queue priority, determine No-Show transitions, or calculate wait times. All domain logic resides in `backend/src/services/`.
 2. **Deny-by-Default RBAC**: Every administrative or staff route requires explicit role authorization.
 3. **Audit Trails**: Critical state mutations emit append-only events to the activity log without containing PII.
-4. **Idempotency**: All payment, booking, and check-in mutations accept an `Idempotency-Key` or unique client token handled by `requestKey.middleware.js`.
+4. **Idempotency**: Booking and check-in request replay is a Phase 3 requirement. The supporting receipt table is present, but middleware and replay behavior are not implemented yet.
 
 ## 3. Frontend Architecture
 
