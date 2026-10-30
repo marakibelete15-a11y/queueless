@@ -1,43 +1,87 @@
+-- UP
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE clinic (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL CHECK (length(trim(name)) > 0),
+  clinic_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL CHECK (length(btrim(name)) > 0),
+  address text,
+  phone text,
   timezone text NOT NULL DEFAULT 'Africa/Addis_Ababa',
-  created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (id)
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  updated_at timestamptz NOT NULL DEFAULT clock_timestamp()
 );
 
 CREATE TABLE clinic_setting (
-  clinic_id uuid PRIMARY KEY REFERENCES clinic(id) ON DELETE RESTRICT,
-  grace_window_minutes integer NOT NULL DEFAULT 15 CHECK (grace_window_minutes >= 0),
-  no_show_deadline_minutes integer NOT NULL DEFAULT 30 CHECK (no_show_deadline_minutes > 0),
-  resume_grace_minutes integer NOT NULL DEFAULT 10 CHECK (resume_grace_minutes >= 0),
-  staff_activity_guard_minutes integer NOT NULL DEFAULT 10 CHECK (staff_activity_guard_minutes > 0),
-  call_timeout_minutes integer NOT NULL DEFAULT 5 CHECK (call_timeout_minutes > 0),
-  patient_cancellation_cutoff_hours integer NOT NULL DEFAULT 2 CHECK (patient_cancellation_cutoff_hours >= 0),
-  booking_window_days integer NOT NULL DEFAULT 14 CHECK (booking_window_days > 0),
-  active_future_appointments_per_phone integer NOT NULL DEFAULT 3 CHECK (active_future_appointments_per_phone > 0),
-  default_consultation_minutes integer NOT NULL DEFAULT 10 CHECK (default_consultation_minutes > 0),
-  consultation_sample_size integer NOT NULL DEFAULT 20 CHECK (consultation_sample_size > 0),
-  consultation_minimum_sample integer NOT NULL DEFAULT 5 CHECK (consultation_minimum_sample > 0 AND consultation_minimum_sample <= consultation_sample_size),
-  login_failed_attempt_limit integer NOT NULL DEFAULT 5 CHECK (login_failed_attempt_limit > 0),
-  login_lockout_minutes integer NOT NULL DEFAULT 15 CHECK (login_lockout_minutes > 0),
-  session_idle_minutes integer NOT NULL DEFAULT 30 CHECK (session_idle_minutes > 0),
-  session_absolute_hours integer NOT NULL DEFAULT 12 CHECK (session_absolute_hours > 0),
-  temporary_password_hours integer NOT NULL DEFAULT 24 CHECK (temporary_password_hours > 0),
-  public_refresh_seconds integer NOT NULL DEFAULT 15 CHECK (public_refresh_seconds > 0),
-  staff_refresh_seconds integer NOT NULL DEFAULT 10 CHECK (staff_refresh_seconds > 0),
-  day_end_sweep_enabled boolean NOT NULL DEFAULT true,
-  day_end_sweep_local_time time NOT NULL DEFAULT '23:59',
-  retention_visits_days integer CHECK (retention_visits_days > 0),
-  retention_patients_days integer CHECK (retention_patients_days > 0),
-  retention_sessions_days integer CHECK (retention_sessions_days > 0),
-  retention_events_days integer CHECK (retention_events_days > 0),
-  retention_activity_days integer CHECK (retention_activity_days > 0),
-  retention_notices_days integer CHECK (retention_notices_days > 0),
-  retention_rate_limits_days integer CHECK (retention_rate_limits_days > 0),
-  retention_request_receipts_days integer CHECK (retention_request_receipts_days > 0),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (grace_window_minutes < no_show_deadline_minutes)
+  clinic_id uuid NOT NULL,
+  key text NOT NULL CHECK (key IN (
+    'queue_timing', 'booking_policy', 'consultation_policy', 'authentication_policy',
+    'refresh_intervals', 'enabled_languages', 'emergency_contact_numbers',
+    'application_mode', 'backup_policy', 'rate_limit_policy',
+    'retention.visits_days', 'retention.patients_days', 'retention.activity_log_days'
+  )),
+  value jsonb,
+  updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  updated_by uuid,
+  PRIMARY KEY (clinic_id, key),
+  -- RESTRICT protects clinic configuration from accidental clinic deletion.
+  CONSTRAINT clinic_setting_clinic_fk FOREIGN KEY (clinic_id)
+    REFERENCES clinic(clinic_id) ON DELETE RESTRICT,
+  CHECK (
+    key <> 'queue_timing' OR value IS NULL OR
+    ((value->>'grace_window_minutes')::integer < (value->>'no_show_deadline_minutes')::integer)
+  ),
+  CHECK (key <> 'application_mode' OR value IS NULL OR value->>'mode' IN ('demo', 'pilot')),
+  CHECK (key NOT LIKE 'retention.%' OR value IS NULL OR
+    (jsonb_typeof(value)='number' AND (value #>> '{}')::integer > 0))
 );
+
+CREATE FUNCTION enforce_pilot_retention_settings() RETURNS trigger
+LANGUAGE plpgsql AS $$
+DECLARE
+  mode_value text;
+  configured_count integer;
+BEGIN
+  SELECT value->>'mode' INTO mode_value
+  FROM clinic_setting WHERE clinic_id = NEW.clinic_id AND key = 'application_mode';
+  IF NEW.key = 'application_mode' THEN
+    mode_value := NEW.value->>'mode';
+  END IF;
+  IF mode_value = 'pilot' THEN
+    SELECT count(*) INTO configured_count FROM clinic_setting
+    WHERE clinic_id = NEW.clinic_id
+      AND key IN ('retention.visits_days', 'retention.patients_days', 'retention.activity_log_days')
+      AND value IS NOT NULL;
+    IF NEW.key IN ('retention.visits_days', 'retention.patients_days', 'retention.activity_log_days')
+       AND NEW.value IS NOT NULL AND NOT EXISTS (
+         SELECT 1 FROM clinic_setting s WHERE s.clinic_id = NEW.clinic_id
+           AND s.key IN ('retention.visits_days', 'retention.patients_days', 'retention.activity_log_days')
+           AND s.key <> NEW.key AND s.value IS NOT NULL
+       ) THEN
+      configured_count := configured_count + 1;
+    END IF;
+    IF configured_count <> 3 THEN
+      RAISE EXCEPTION 'pilot mode requires visits, patients, and activity_log retention values' USING ERRCODE = '23514';
+    END IF;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE CONSTRAINT TRIGGER clinic_setting_pilot_retention_ck
+AFTER INSERT OR UPDATE ON clinic_setting DEFERRABLE INITIALLY IMMEDIATE
+FOR EACH ROW EXECUTE FUNCTION enforce_pilot_retention_settings();
+
+CREATE FUNCTION prevent_clinic_setting_delete() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'clinic settings are updated in place; delete is not permitted' USING ERRCODE = '55000';
+END $$;
+CREATE TRIGGER clinic_setting_no_delete BEFORE DELETE ON clinic_setting
+FOR EACH ROW EXECUTE FUNCTION prevent_clinic_setting_delete();
+
+-- DOWN
+DROP TRIGGER IF EXISTS clinic_setting_no_delete ON clinic_setting;
+DROP FUNCTION IF EXISTS prevent_clinic_setting_delete();
+DROP TRIGGER IF EXISTS clinic_setting_pilot_retention_ck ON clinic_setting;
+DROP FUNCTION IF EXISTS enforce_pilot_retention_settings();
+DROP TABLE IF EXISTS clinic_setting;
+DROP TABLE IF EXISTS clinic;
+DROP EXTENSION IF EXISTS pgcrypto;

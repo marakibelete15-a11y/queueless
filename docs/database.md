@@ -1,135 +1,132 @@
-# QueueLess database design (Phase 2)
+# QueueLess database design
 
-PostgreSQL is the shared contract for clinic, scheduling, appointment, and queue data. Migrations use plain SQL and `pg`; no ORM or application routes are introduced here. This schema is for synthetic development data only. The authoritative `QueueLess_SRS_v1_1.pdf` was referenced in the task but was not present in the supplied attachments or repository. The mapping below follows the detailed DB-1–DB-11 and entity requirements pasted with the task; confirm it against SRS Sections 5, 8, 9, and 10 before real implementation or data.
+PostgreSQL is the source of truth for clinic, scheduling, visits and queue state. The repository uses plain SQL migrations and the existing custom `pg` runner; there is no ORM or Docker requirement. All instants use `timestamptz` and the server clock (`clock_timestamp()`) supplies status-change times. A backfilled time must set `times_backfilled=true` and record its staff attribution. Clinic days and display formatting use the clinic timezone, defaulting to `Africa/Addis_Ababa`.
 
-## Tables and relationships
+UUID primary keys are used for independently created clinic entities so references can be generated safely before insert and exposed without sequential IDs. `doctor_day_queue` uses its required composite `(doctor_id, queue_date)` key. `booking_ref` is a separate random public code.
 
-| Table                   | Purpose                                                                                                         | Ownership / key relationships                                                               |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `clinic`                | Tenant and clinic timezone                                                                                      | Root; UUID PK                                                                               |
-| `clinic_setting`        | Proposed clinic timing, booking, lockout, refresh, sweep, consultation defaults, plus nullable retention values | One-to-one clinic; retention is intentionally unset                                         |
-| `app_user`              | Staff identity, role, password hash, lockout and temporary-password controls                                    | Clinic-scoped unique username; logical SRS entity `User` (avoids SQL `USER` keyword)        |
-| `user_session`          | Hashed session token, idle/absolute expiry and invalidation                                                     | Clinic and staff; does not store raw token                                                  |
-| `doctor`                | Doctor profile linked optionally to staff account                                                               | Clinic-scoped; one staff account per doctor at most                                         |
-| `doctor_schedule`       | Recurring weekly availability template                                                                          | Doctor; effective dates and duration                                                        |
-| `schedule_block`        | One-off doctor unavailability                                                                                   | Doctor and optional staff creator                                                           |
-| `slot`                  | Concrete appointment time for doctor                                                                            | Doctor and optional schedule; unique doctor start time                                      |
-| `patient`               | Minimal patient/contact record                                                                                  | Clinic-scoped; guardian name only when marked minor                                         |
-| `visit`                 | Business record and sole owner of visit status                                                                  | Patient, doctor and optional appointment slot; visit type distinguishes Appointment/Walk-in |
-| `doctor_day_queue`      | One shared doctor queue per clinic day and its state/counters                                                   | Unique clinic + doctor + date; serialized transaction lock target                           |
-| `queue_entry`           | Queue order, queue number, effective time, priority, skip count, lifecycle times, backfill and paper reference  | Zero or one per visit; deliberately has no status column                                    |
-| `visit_event`           | Visit history, status transition, localized message key and backfill marker                                     | Visit and optional actor; immutable historical rows by convention                           |
-| `clinic_notice`         | Public or emergency notices                                                                                     | Clinic and optional staff creator                                                           |
-| `activity_log`          | Append-only administrative/security audit record                                                                | Clinic, optional staff/session; no patient contact fields are modeled                       |
-| `rate_limit_counter`    | Expiring counters keyed by 32-byte hashed technical key                                                         | Clinic; plaintext identifiers are not stored                                                |
-| `request_deduplication` | Supporting idempotency receipt for Phase 3 requests                                                             | Unique clinic + operation + key; payload digest and replay response                         |
-| `schema_migrations`     | Runner-owned migration/checksum history                                                                         | Separate operational metadata, not a business table                                         |
-
-All timestamps are `timestamptz`; application event timestamps must be generated in UTC. The clinic timezone defaults to `Africa/Addis_Ababa`; presentation and clinic-day calculations belong in the application layer. Recurring opening times are local `time` values, while concrete slot/block/event instants are timestamps.
+## ERD
 
 ```mermaid
 erDiagram
-  CLINIC ||--|| CLINIC_SETTING : configures
+  CLINIC ||--o{ CLINIC_SETTING : configures
   CLINIC ||--o{ APP_USER : owns
-  APP_USER ||--o{ USER_SESSION : opens
+  APP_USER ||--o{ SESSION : opens
   CLINIC ||--o{ DOCTOR : owns
-  APP_USER o|--o| DOCTOR : may_be
-  DOCTOR ||--o{ DOCTOR_SCHEDULE : scheduled_by
-  DOCTOR ||--o{ SCHEDULE_BLOCK : blocked_by
-  DOCTOR_SCHEDULE o|--o{ SLOT : generates
+  APP_USER o|--o| DOCTOR : links
+  DOCTOR ||--o{ DOCTOR_SCHEDULE : has
+  DOCTOR ||--o{ SCHEDULE_BLOCK : blocks
   DOCTOR ||--o{ SLOT : offers
+  DOCTOR_SCHEDULE o|--o{ SLOT : generates
   CLINIC ||--o{ PATIENT : registers
-  PATIENT ||--o{ VISIT : has
-  DOCTOR ||--o{ VISIT : assigned
-  SLOT o|--o{ VISIT : appointment_for
+  PATIENT ||--o{ VISIT : attends
+  DOCTOR ||--o{ VISIT : serves
+  SLOT o|--o{ VISIT : reserves
+  VISIT ||--o| QUEUE_ENTRY : queues
   DOCTOR ||--o{ DOCTOR_DAY_QUEUE : runs
-  VISIT ||--o| QUEUE_ENTRY : receives_at_checkin
-  DOCTOR_DAY_QUEUE ||--o{ QUEUE_ENTRY : orders
   VISIT ||--o{ VISIT_EVENT : records
   CLINIC ||--o{ CLINIC_NOTICE : publishes
   CLINIC ||--o{ ACTIVITY_LOG : audits
-  USER_SESSION o|--o{ ACTIVITY_LOG : attributes
   CLINIC ||--o{ RATE_LIMIT_COUNTER : limits
+  CLINIC ||--o{ RETENTION_APPROVAL : approves
+  DOCTOR ||--o{ RETENTION_VISIT_SUMMARY : summarizes
   CLINIC ||--o{ REQUEST_DEDUPLICATION : deduplicates
 ```
 
-Composite `(clinic_id, id)` keys and composite foreign keys prevent cross-clinic links for staff, sessions, doctors, schedules, slots, visits, queues, and audit actors. Restrictive delete behavior preserves visit and audit history. `doctor_schedule` is a recurring template; schedule generation and overlap validation remain service responsibilities.
+## Tables
 
-## Invariants, indexes, and traceability
+| Table | Purpose |
+| --- | --- |
+| `clinic` | Single clinic identity, contact and timezone. |
+| `clinic_setting` | JSON configuration, timing/booking/authentication defaults, language/mode, backup policy and nullable legal retention settings. |
+| `app_user` | Dashboard display name, unique clinic username/email, role, password and lockout state. |
+| `session` | Server-side hashed session, idle/absolute expiry and last activity. |
+| `doctor` | Doctor name, optional specialty and optional linked staff user. |
+| `doctor_schedule` | Weekly local-time availability template. |
+| `schedule_block` | One-off unavailability and creator attribution. |
+| `slot` | Concrete doctor appointment time. |
+| `patient` | Minimum identity/contact fields only: full name, normalized nullable phone, minor flag and contact person. |
+| `visit` | Patient/doctor/optional slot booking, the only status column, public reference/token and optimistic version. |
+| `doctor_day_queue` | Per doctor and clinic date lock row, counters and day state. |
+| `queue_entry` | Queue ordering and lifecycle timestamps; deliberately has no status. |
+| `visit_event` | Visit-scoped history and patient-visible message key/unread state. |
+| `clinic_notice` | Public or emergency notice. |
+| `activity_log` | Append-only administrative audit events. |
+| `rate_limit_counter` | Expiring counters keyed only by a 32-byte hash. |
+| `retention_approval` | Administrator authorization for a retention batch. |
+| `retention_visit_summary` | Aggregate JSON counts retained after approved visit removal; no patient identity. |
+| `request_deduplication` | Idempotency key and payload receipt for API mutations. |
+| `schema_migrations` | Custom runner checksum ledger, operational metadata rather than clinic data. |
 
-| Requirement                             | Implementation / responsibility                                                                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DB-1 active appointment slot uniqueness | Partial unique `visit_one_active_appointment_per_slot_uq`; canceled visit frees slot                                                                              |
-| DB-2 booking reference                  | Unique `visit.booking_ref`, length at least 10; Phase 3 generates with cryptographic randomness and retries rare collisions                                       |
-| DB-3 entry cardinality                  | `UNIQUE(queue_entry.visit_id)`; no queue entry is required for a booked visit                                                                                     |
-| DB-4 doctor concurrency                 | Partial unique indexes for `Called` and `In Consultation`, scoped by clinic + doctor                                                                              |
-| DB-5 daily queue identifiers            | Unique doctor-day queue; unique clinic/doctor/date/queue number and sequence; trigger makes queue identity and numbers immutable and prohibits deleting history   |
-| DB-6 paper references                   | Partial unique clinic/date/paper reference index when non-null                                                                                                    |
-| DB-7 integrity                          | FKs, visit status CHECK, skip count 0–2, positive times/counters, clinic-safe relationships, restrictive deletes, slot/visit and queue/visit consistency triggers |
-| DB-8 active appointments per phone      | Phase 3 contract below; cannot be made reliable by a row CHECK                                                                                                    |
-| DB-9 queue operation                    | Phase 3 transaction contract below; DB provides queue row, visit version and event/audit tables                                                                   |
-| DB-10 privileges                        | Roles and grant recipe below; application role must not own schema or activity table                                                                              |
-| DB-11 time storage                      | `timestamptz`; application writes UTC and displays in the configured clinic timezone                                                                              |
+No diagnosis, symptoms, history, medication, national ID, patient address, date of birth, photo, payment or GPS columns are present. `clinic.address` is the required clinic contact address, not a patient address. The only visit statuses are `Booked`, `Waiting`, `Called`, `In Consultation`, `Completed`, `Cancelled`, and `No-Show`; `Skipped` is an event and a queue `skip_count`, never a status.
 
-The only visit statuses are `Booked`, `Waiting`, `Called`, `In Consultation`, `Completed`, `Cancelled`, and `No-Show`. `Skipped` is an event type in `visit_event`, never a visit status; the associated queue row increments `skip_count` (0–2). The database verifies status vocabulary, not every permitted transition. Free-text reasons are administrative only and must never include diagnoses, symptoms, or other medical detail.
+## Foreign key delete behavior
 
-Other indexes support active sessions, schedule lookup, slot/doctor time lookup, clinic patient history, doctor-day visit filtering, queue ordering, visit event history, current notices, audit chronology, expiring rate counters, and idempotency cleanup. Partial indexes are documented next to their creation in the SQL migrations.
+| Relationship | Delete action | Reason |
+| --- | --- | --- |
+| Clinic to any clinic-owned row | `RESTRICT` | A clinic cannot be removed while its operational or audit history exists. |
+| User to session | `CASCADE` | A removed user cannot retain an active server session. |
+| Doctor to schedule | `CASCADE` | Recurring templates have no meaning without their doctor. |
+| Doctor to visits/slots/blocks/day queues | `RESTRICT` | Preserve appointment and queue history. |
+| Patient to visit | `RESTRICT` | Never lose visit history through routine patient deletion. |
+| Slot to visit | `RESTRICT` | Preserve appointment linkage. |
+| User to booked_by / optional creator / event actor | `SET NULL` | Retain the business/audit record after staff identity removal. |
+| Visit to queue entry/event | `RESTRICT` | Only approved retention processing removes the visit and its dependents in a controlled order. |
+| Approver to retention approval | `RESTRICT` | Preserve who authorized deletion. |
+| Doctor to retention summary | `RESTRICT` | Keep report aggregates interpretable. |
 
-## Required Phase 3 transactions (not implemented here)
+All FKs have explicit delete behavior and supporting indexes. Normal operation never hard-deletes visits; see [retention policy](../database/retention.md).
 
-### Active appointment cap by phone
+## Indexes and the queries they serve
 
-Normalize the phone number in the application, then in one transaction acquire `SELECT pg_advisory_xact_lock(hashtextextended($normalized_phone, 0))`; count that phone's active future visits for the clinic (excluding `Cancelled` and `No-Show`, using the configured booking horizon/cap); reject at the configured limit; insert the appointment and commit. All code paths must use the same normalization and lock key. Retry booking-reference unique collisions. The service test must run competing bookings on independent connections and prove that the configured cap is not exceeded.
+| Index (or index family) | Query served |
+| --- | --- |
+| `clinic_setting_updated_by_idx`, `*_clinic_fk_idx`, `app_user_clinic_idx` | FK checks and clinic-scoped ownership lookups. |
+| `session_user_fk_idx`, `session_clinic_fk_idx`, `session_expiry_idx` | User session lookup and expired-session cleanup. |
+| `doctor_user_fk_idx`, `doctor_schedule_doctor_fk_idx`, `schedule_block_doctor_fk_idx`, `schedule_block_creator_fk_idx` | Doctor ownership, schedules and block creator FK checks. |
+| `slot_doctor_fk_idx`, `slot_schedule_fk_idx`, `slot_clinic_fk_idx`, `slot_start_at_idx` | Doctor/date slot listings, schedule FK checks and chronological slot lookup. |
+| `patient_clinic_fk_idx`, `patient_phone_idx` | Clinic patient FK and normalized phone lookup. |
+| `visit_patient_fk_idx`, `visit_doctor_fk_idx`, `visit_slot_fk_idx`, `visit_booker_fk_idx`, `visit_clinic_fk_idx` | Visit relationship checks and patient/doctor/slot/booker lookups. |
+| `visit_created_at_idx`, `visit_dashboard_day_idx`, `visit_patient_lookup_idx` | Newest visits, daily doctor counts and patient visit history. |
+| Unique `visit_booking_ref_uq`, `visit_status_token_idx` | Booking reference lookup and status page token lookup. |
+| Unique `visit_one_active_appointment_per_slot_uq` | Enforce one non-cancelled appointment per slot and find slot conflicts. |
+| Unique `visit_one_called_per_doctor_uq`, `visit_one_consultation_per_doctor_uq` | Enforce one called and one active consultation per doctor. |
+| `queue_entry_doctor_fk_idx`, `queue_entry_clinic_fk_idx`, `queue_entry_visit_fk_idx`, `queue_entry_backfiller_fk_idx` | Queue FK checks. |
+| `queue_entry_paper_ref_uq` | Paper ticket uniqueness per clinic day. |
+| `queue_entry_board_idx` | Queue board order by doctor/day/priority/effective time/sequence. |
+| `queue_entry_effective_time_idx`, `queue_entry_arrived_at_idx` | Queue time sorting and arrival lookup. |
+| `queue_entry_eta_idx` | Recent completed consultation sample, excluding backfilled times. |
+| `visit_event_actor_fk_idx`, `visit_event_clinic_fk_idx`, `visit_event_visit_fk_idx`, `visit_event_created_at_idx` | Event FK checks and chronological visit history. |
+| Partial `visit_event_unread_idx` | Unread events for a visit (`is_read=false`). |
+| `activity_log_actor_fk_idx`, `activity_log_newest_idx` | Actor FK checks and newest-first clinic audit history. |
+| `rate_limit_clinic_fk_idx`, `rate_limit_expiry_idx` | Counter ownership and expired counter cleanup. |
+| `retention_approval_actor_fk_idx`, `retention_approval_pending_idx` | Approval FK and pending retention review list. |
+| `retention_summary_approval_fk_idx`, `retention_summary_doctor_fk_idx` | Aggregate approval and doctor FK checks. |
+| `request_deduplication` unique scope index | Idempotency arbitration by clinic/operation/key. |
 
-### Check-in, walk-in, and queue operations
+The complete representative query suite is [explain-dashboard.sql](../database/queries/explain-dashboard.sql). PostgreSQL may prefer sequential scans on tiny fixtures; after loading 20,000 visits and running `ANALYZE`, inspect the plans before asserting index use. For this larger fixture, expected dashboard lookups should use selective indexes rather than scan large relations; query 3 legitimately examines the 140 concrete slots in its two-week window.
 
-For a booked check-in, begin a transaction, lock the matching `doctor_day_queue` row with `SELECT ... FOR UPDATE`, compare the submitted `visit.version`, check authorization and allowed transition, allocate monotonic queue identifiers by updating the queue row counters with `UPDATE ... RETURNING`, move the visit to `Waiting`, create its sole `queue_entry`, increment visit version, append `visit_event` and `activity_log`, and commit. A walk-in visit and its queue entry must be inserted together in that transaction. Queue numbers are never reused; do not delete or renumber queue rows. Rejected stale versions return a conflict without partial writes.
+## Booking and queue transactions
 
-Every mutating request accepts a stable idempotency key. In the same transaction, insert `(clinic_id, operation_scope, request_key, payload_sha256)` in `request_deduplication`; the unique key arbitrates concurrent duplicate requests. A repeated key with the same payload replays the stored response; the same key with a different digest is rejected. Store the result before commit. Retention/expiry policy for request receipts needs an explicit operational decision.
+Generate a booking reference with `SELECT generate_booking_ref()`. It returns 12 cryptographically random characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (no look-alike characters). Treat it as a public lookup code, enforce uniqueness with the DB constraint, and retry on the rare unique collision.
 
-### Database roles
-
-Use a dedicated owner/migration role and a separate application login. The migration role owns the schema; the app role gets only `CONNECT`, schema `USAGE`, required table DML, and sequence usage. Do not grant schema `CREATE`, ownership, or superuser. Explicitly revoke `UPDATE` and `DELETE` on `activity_log`; the migration also installs an immutability trigger. The trigger is defense in depth, not a substitute for roles. Run role setup only in this dedicated database and do not alter unrelated/shared roles. `scripts/setup-db.sh` creates only a missing, clearly named `*_dev` database and never creates roles or sets passwords.
-
-For a new, dedicated local database, create the `queueless_owner` and `queueless_app` logins securely, create the database, and run the initial migrations as owner first. Then connect as database owner and apply the scoped grants (repeat default privileges for each future migration owner):
+To enforce a per-phone booking limit, normalize the phone before entering the transaction and use the same normalized value for every booking path:
 
 ```sql
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT CONNECT ON DATABASE queueless_dev TO queueless_app;
-GRANT USAGE ON SCHEMA public TO queueless_app;
-GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO queueless_app;
-REVOKE ALL ON TABLE public.schema_migrations FROM queueless_app;
-REVOKE UPDATE, DELETE ON TABLE public.activity_log FROM queueless_app;
-REVOKE UPDATE, DELETE ON TABLE public.visit_event FROM queueless_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO queueless_app;
-ALTER DEFAULT PRIVILEGES FOR ROLE queueless_owner IN SCHEMA public
-  GRANT SELECT, INSERT ON TABLES TO queueless_app;
-ALTER DEFAULT PRIVILEGES FOR ROLE queueless_owner IN SCHEMA public
-  GRANT USAGE, SELECT ON SEQUENCES TO queueless_app;
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtextextended($1::text, 0)); -- $1 normalized phone
+SELECT count(*)
+FROM visit v JOIN patient p ON p.clinic_id=v.clinic_id AND p.patient_id=v.patient_id
+WHERE v.clinic_id=$2 AND p.phone=$1
+  AND v.type='appointment' AND v.status NOT IN ('Cancelled','No-Show')
+  AND v.visit_date BETWEEN $3 AND $4;
+-- Reject at the configured limit; otherwise insert and COMMIT.
+COMMIT;
 ```
 
-This grants `UPDATE` only to tables that exist at provisioning time. New tables receive `SELECT` and `INSERT` by default; review each later migration and grant `UPDATE` only where its application behavior requires it. Never grant history-table updates. The migration runner removes all `queueless_app` access from `schema_migrations` when it connects.
+Queue mutations run in one transaction: select the matching `doctor_day_queue` row `FOR UPDATE`; compare the submitted `visit.version`; apply the allowed visit/queue change using the server clock; increment `visit.version`; insert `visit_event` and `activity_log`; commit. Allocate queue numbers from the locked day row and never reuse them. A version mismatch returns a conflict without partial writes. Walk-in visit and queue entry creation are atomic.
 
-## Migration, setup, seed, and test workflow
+## Roles and migration workflow
 
-1. Install local PostgreSQL and create dedicated `queueless_dev` and `queueless_test` databases with an owner and separate application role. Securely set role passwords interactively (`psql` `\password`); do not put credentials in SQL or commit `.env`.
-2. `PG_ADMIN_URL=... npm run db:setup` creates `queueless_dev` only if missing. It does not alter roles, passwords, or existing databases.
-3. Copy `.env.example` to `.env`; set `DATABASE_URL` to the application login and `MIGRATION_DATABASE_URL` to the local owner login. Migration/seed tooling uses the latter. Use `APP_MODE=demo` only for synthetic seed development.
-4. `npm run migrate` applies numbered SQL files in lexical order. Each migration and its SHA-256 history record share one transaction. A PostgreSQL advisory lock serializes runners. A failed migration rolls back and stops; checksums catch edits and the runner refuses missing applied files.
-5. Apply the privilege recipe above against the dedicated development database, then `APP_MODE=demo npm run seed` runs repeatable fixed-ID synthetic fixtures. Seeding is rejected unless the connected database is local, ends in `_dev` and `APP_MODE=demo`.
-6. Point `MIGRATION_DATABASE_URL` at a dedicated local database ending in `_test`, then run `npm run test:db`. Tests refuse other database names and use real PostgreSQL constraints. Do not point it at dev or production.
-7. `scripts/reset-dev-db.sh` is destructive, requires a database name ending `_dev` and exact typed confirmation, and recreates only that named DB using `PG_ADMIN_URL`. Then run migrations, grants, and seeds explicitly.
+`queueless_owner` is the DDL/migration owner. `queueless_app` has DML only, no schema `CREATE`, no DDL privileges, and no `UPDATE`/`DELETE` on `activity_log`. An append-only trigger independently rejects activity mutation. Apply [roles-and-grants.sql](../database/roles/roles-and-grants.sql) as a database administrator after migration; set passwords interactively and keep them out of files. Existing custom migration runner executes files in order as `MIGRATION_DATABASE_URL`; `npm run migrate:down` applies the latest migration's DOWN in a transaction. Every migration has UP/DOWN; the runner uses checksums to prevent silently editing an already applied migration.
 
-Rollback is forward-only. Do not edit an applied migration. For a failed transactional migration, inspect the reported SQLSTATE, correct the unapplied migration before sharing it, and rerun. For an applied schema change, write a reviewed forward repair migration. Restore from a verified backup only when the change cannot safely be repaired forward; never delete migration history or manually claim a migration succeeded. Legacy `schema_migrations` tables without checksums are rejected for manual reconciliation.
-
-## Team schema-change contract
-
-These Phase 2 files are `001`–`008` under `database/migrations/`. Coordinate changes in the shared database contract with backend and frontend contributors before merge. Number a new migration after the latest shared file, review tenant scoping, FK/delete behavior, index selectivity/partial predicates, migration locking/atomicity, rollback implications, data minimization, and test coverage. Never edit a migration another environment may have applied. Resolve numbering conflicts before merging by renumbering only unapplied migrations on the branch and updating their references/checksums. Backend developers should agree on SQL field names, status semantics, version checks, transaction boundaries, and idempotency before implementing repositories/services.
-
-## Deferred and unresolved
-
-- Verify all field details, BR-1–BR-12 transitions, DB-1–DB-11 wording, and AT-1–AT-20 against the missing SRS PDF.
-- Phase 3 must implement/test status transition authorization, optimistic-version operations, phone normalization/advisory locking/cap, and idempotent response replay.
-- Cross-setting validation beyond the `grace_window < no_show_deadline` constraint belongs in settings update service logic.
-- Retention periods remain `NULL`; clinic/legal review must decide them. The displayed timing defaults are proposed SRS defaults, not approved clinic policy.
-- No diagnoses, symptoms, medical history, medications, national ID, address, DOB, photographs, payment details, or GPS fields are modeled. Seed data is fictional; it is not approval to use patient data.
+`npm run seed` loads only fictional small frontend fixtures and requires local `*_dev` plus `APP_MODE=demo`. `npm run seed:large` adds a larger synthetic plan fixture for `EXPLAIN`; neither seed is production data. Passwords in the small seed are bcrypt cost 12 and are development-only (`QueueLessDemo2026!`). Retention values stay SQL NULL until legal review.
