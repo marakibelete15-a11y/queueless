@@ -1,43 +1,31 @@
-# QueueLess Database Management
+# QueueLess database development
 
-## Overview
+PostgreSQL, plain SQL and the existing custom `pg` migration runner are used. No Docker or ORM is required. See [the complete schema contract](../docs/database.md) and [retention policy](retention.md).
 
-QueueLess utilizes a direct, plain-SQL migration methodology managed with PostgreSQL and the `pg` client library.
+## Local setup
 
-## Directory Structure
+Use an existing local PostgreSQL server. Provision a dedicated `queueless_owner` migration login and `queueless_app` login, then create `queueless_dev` and (if needed) `queueless_test`. Set role passwords interactively with `psql` `\password`; never put them in SQL or shell history. Use `database/roles/roles-and-grants.sql` as a database administrator after applying migrations. The application role receives DML only, while migrations run through `MIGRATION_DATABASE_URL` as the owner.
 
-- `migrations/`: Sequentially numbered SQL files executed in ascending order:
-  - `001_clinic_settings.sql` (Clinic & Multi-tenant configuration)
-  - `002_users_sessions.sql` (Staff accounts & RBAC sessions)
-  - `003_doctors_schedules_slots.sql` (Roster & Appointment slots)
-  - `004_patients_visits.sql` (Patient records & Visit lifecycle)
-  - `005_queue_entries.sql` (Queue entries & Priority tracking)
-  - `006_events_activity_log.sql` (Append-only audit trail)
-  - `007_constraints_indexes.sql` (Integrity constraints & Performance indexes)
-- `seeds/`: Synthetic demonstration records for local testing (`001_synthetic_seed.sql`).
-
-## Migration Execution
-
-To apply unapplied migrations:
+Set the two connection variables in your environment or an untracked `.env` file:
 
 ```bash
-npm run migrate
+MIGRATION_DATABASE_URL='postgresql://queueless_owner@localhost/queueless_dev' npm run migrate
+APP_MODE=demo MIGRATION_DATABASE_URL='postgresql://queueless_owner@localhost/queueless_dev' npm run seed
+APP_MODE=demo MIGRATION_DATABASE_URL='postgresql://queueless_owner@localhost/queueless_dev' npm run seed:large
 ```
 
-To load synthetic demo seed data:
+The runner applies migration files lexically in one transaction each and stores a SHA-256 checksum. It refuses missing or changed applied migrations. Each migration contains UP and DOWN sections; `npm run migrate:down` rolls back the latest applied file. Seeds are repeatable and are accepted only for a local database whose name ends in `_dev` with `APP_MODE=demo`. The large seed adds synthetic volume for planner inspection. Small fixtures use invented names, fake phone numbers and bcrypt cost-12 development passwords (`QueueLessDemo2026!`). Do not use these credentials outside a local demo.
 
-```bash
-npm run seed
-```
+`npm run db:setup` creates a missing development database only; it does not run migrations, grant roles, or modify an existing DB. `npm run db:reset-dev` is destructive, targets only a named `_dev` database, and requires typing the exact database name. For database integration tests, configure a separate `_test` database and run `npm run test:db`; never use development or production data.
 
-To reset the local development database completely:
+## Files
 
-```bash
-./scripts/reset-dev-db.sh
-```
+- `migrations/001`–`008`: schema, constraints, indexes, and their DOWN sections.
+- `seeds/001_synthetic_seed.sql`: small fictional frontend fixture.
+- `seeds/002_large_explain_seed.sql`: 20,000-visit/10-doctor synthetic planner fixture.
+- `queries/explain-dashboard.sql`: eight dashboard query plans using `EXPLAIN (ANALYZE, BUFFERS)`.
+- `roles/roles-and-grants.sql`: database administrator provisioning, role separation and least-privilege grants.
 
-## Migration Conventions
+## Development only
 
-1. Migrations are forward-only. Never modify an existing migration file once applied or committed to `develop`/`main`.
-2. Add new migrations using the next sequential three-digit prefix (e.g., `008_feature_name.sql`).
-3. Each migration runs within a single atomic database transaction.
+Synthetic seed data and its development credentials are for local development only. Retention is unset pending legal review; never fill in guessed periods. Follow the explicit administrator approval workflow in [retention.md](retention.md) before any retention deletion.
